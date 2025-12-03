@@ -1,0 +1,11 @@
+{
+  "name": "backend",
+  "private": true,
+  "type": "module",
+  "main": "dist/app/index.js",
+  "scripts": {
+    "dev": "npx tsx watch src/app/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/app/index.js"
+  }
+}
