@@ -2,3 +2,12 @@ node_modules
 .next
 .env
 dist
+.env.*
+!.env.example
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
