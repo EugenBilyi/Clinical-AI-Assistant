@@ -25,6 +25,7 @@ const InputBar = forwardRef<HTMLTextAreaElement, InputBarProps>(
                                 placeholder="Write message..."
                                 name="promt-textarea"
                                 id="promt-textarea"
+                                maxLength={10000}
                                 rows={1}
                                 wrap="soft"
                                 value={val}

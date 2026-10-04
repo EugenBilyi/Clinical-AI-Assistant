@@ -11,6 +11,7 @@ const ChatContainer = () => {
     const [val, setVal] = useState('');
     const [messages, setMessages] = useState<ChatMessage[]>([]); // Simulation for show text from InputBar
     const textAreaRef = useRef<HTMLTextAreaElement>(null);
+    const [error, setError] = useState<string | null>(null);
     const [isAtBottom, setIsAtBottom] = useState(true);
     const [isThinking, setIsThinking] = useState(false);
     const thinkingPhrases = ['Thinking', 'Thinking.', 'Thinking..', 'Thinking...'];
@@ -22,9 +23,9 @@ const ChatContainer = () => {
         setVal(e.target.value);
     };
 
-    const handleSend = () => {
+    const handleSend = async () => {
         const text = val.trim();
-        if (!text) return;
+        if (!text || isThinking) return;
 
         const timestamp = Date.now().toString();
 
@@ -45,27 +46,42 @@ const ChatContainer = () => {
         setMessages((prev) => [...prev, userMessage]);
         setVal('');
 
-        // --- optional: fake answer from Assistant. Chat will not be empty
-        const assistantMessage: ChatMessage = {
+        setError(null);
+        setIsThinking(true);
+
+        try {
+          const response = await fetch('/api/chat/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: text }),
+            signal: AbortSignal.timeout(15000),
+          });
+          
+          if (!response.ok) throw new Error('Request failed');
+
+          const data = await response.json();
+          if(typeof data.answer !== 'string'){
+            throw new Error('Invalid response');
+          }
+
+          const assistantMessage: ChatMessage = {
             id: timestamp + '-assistant',
             role: 'assistant',
             createdAt: Date.now(),
             schemaVersion: '2025-01',
-            blocks: [
-                {
-                    id: 'b-a-' + timestamp,
-                    type: 'markdown',
-                    text: `You said: "${text}"`,
-                },
-            ],
-        };
+            blocks: [{
+              id: 'b-a-' + timestamp,
+              type: 'markdown',
+              text: data.answer,
+            }],
+          };
 
-        setIsThinking(true);
-
-        setTimeout(() => {
-            setMessages((prev) => [...prev, assistantMessage]);
-            setIsThinking(false);
-        }, 1000);
+          setMessages((prev) => [...prev, assistantMessage]);
+        } catch {
+          setError('Unable to send the message. Please try again.')
+        } finally {
+          setIsThinking(false);
+        }
     };
 
     const handleScroll = () => {
@@ -125,6 +141,7 @@ const ChatContainer = () => {
         <div className="relative flex flex-col h-full w-full max-w-6xl mx-auto pt-2">
             <div className="flex-1 overflow-y-auto" ref={wrapperContainer} onScroll={handleScroll}>
                 <MessageList messages={messages} />
+                {error && <p role="alert" className="px-4 text-red-600">{error}</p>}
 
                 {isThinking && (
                     <div className="w-full flex justify-center">

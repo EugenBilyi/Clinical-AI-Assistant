@@ -5,14 +5,16 @@
     "frontend"
   ],
   "scripts": {
-    "dev": "npm run dev:frontend",
+    "dev": "concurrently --kill-others --names frontend,backend \"npm run dev:frontend\" \"npm run dev:backend\"",
     "dev:frontend": "npm --prefix frontend run dev",
+    "dev:backend": "uv run --directory backend uvicorn clinical_ai.main:app --app-dir src --reload",
     "build": "npm run build:frontend",
     "build:frontend": "npm --prefix frontend run build",
     "start": "npm run start:frontend",
     "start:frontend": "npm --prefix frontend run start"
   },
   "devDependencies": {
+    "concurrently": "^9.2.1",
     "prettier": "^3.6.2"
   },
   "dependencies": {
