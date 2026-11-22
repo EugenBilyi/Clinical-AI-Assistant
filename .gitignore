@@ -14,3 +14,5 @@ htmlcov/
 chat_histories/
 Overleaf/
 prace/
+.DS_Store
+.vscode/
